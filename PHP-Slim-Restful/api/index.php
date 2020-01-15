@@ -10,7 +10,7 @@ $app->post('/register_by_idcard','register_by_idcard');
 $app->post('/insert_meet','insert_meet'); 
 $app->run();
 
-/************************* USER LOGIN *************************************/
+/************************* register_by_idcard *************************************/
 function register_by_idcard() {
     
     $request = \Slim\Slim::getInstance()->request();
@@ -40,33 +40,39 @@ function register_by_idcard() {
     }
 }
 
-/************************* insert database *************************************/
+/************************* insert การลงะเบียน database *************************************/
 
-function insert_meet(){
+   function insert_meet(){
     $request = \Slim\Slim::getInstance()->request();
     $data = json_decode($request->getBody());
+    $datenow = date('Y-m-d');
 
     $MEM_ID=$data->MEM_ID;
     $BR_NO=$data->BR_NO;
-    $GD_DATE=$data->GD_DATE;
+    $GD_DATE= $datenow->BR_NO;
     $MEET_YEAR=$data->MEET_YEAR;
     
-    
     try {
+
         $db = getDB();
-        /*Inserting product values*/
-         $sql1="INSERT INTO MEM_MEETING_REGISTER(MEM_ID,BR_NO,GD_DATE,MEET_YEAR)
-         VALUES('$MEM_ID','$BR_NO','$GD_DATE','$MEET_YEAR')";
-         $result = oci_parse($db,$sql1);
-         
-         
-        if($result){
-            $uData=internalquation();	
-            //ส่งค่ากลับ
-            $uData = json_encode($uData);
-            echo '{"Data": ' .$uData . '}';	
+        $sql = 'INSERT INTO MEM_MEETING_REGISTER(MEM_ID,BR_NO,GD_DATE,MEET_YEAR) '.
+                'VALUES(:MEM_ID, :BR_NO, :GD_DATE, :MEET_YEAR)';
+
+        $compiled = oci_parse($db, $sql);
+        oci_bind_by_name($compiled, ':MEM_ID', $MEM_ID);
+        oci_bind_by_name($compiled, ':BR_NO', $BR_NO);
+        oci_bind_by_name($compiled, ':GD_DATE', $GD_DATE);
+        oci_bind_by_name($compiled, ':MEET_YEAR', $MEET_YEAR);
+        oci_execute($compiled);
+
+
+
+        if($compiled){
+            // $uData=internaladdfoll();	
+            $compiled = json_encode($compiled);
+            echo '{"Data": ' .$compiled . '}';	
         }else{
-            echo"{'status':'error $sql1'}";
+            echo"{'status':'error11111'}";
         }
         
         }
@@ -74,5 +80,6 @@ function insert_meet(){
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 }
+
 
 ?>
