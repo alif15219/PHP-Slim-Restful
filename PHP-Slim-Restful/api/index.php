@@ -6,6 +6,9 @@ require 'Slim/Slim.php';
 $app = new \Slim\Slim();
 
 $app->post('/login','login'); /* User login */
+
+
+$app->post('/register_by_idcard','register_by_idcard'); /* User login */
 // $app->post('/signup','signup'); /* User Signup  */
 // $app->get('/getFeed','getFeed'); /* User Feeds  */
 // $app->post('/feed','feed'); /* User Feeds  */
@@ -25,25 +28,34 @@ function login() {
     
     try {
         
-        $db = getDB();
+        //$db = getDB();
+        $db = getDBtest();
         $userData ='';
-        $sql = "SELECT user_id, name, email, username FROM users WHERE (username=:username or email=:username) and password=:password ";
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam("username", $data->username, PDO::PARAM_STR);
-        $password=hash('sha256',$data->password); //syntext  ตัวเเปลงให้เป็น token 
-        $stmt->bindParam("password", $password, PDO::PARAM_STR);
-        $stmt->execute();
-        $mainCount=$stmt->rowCount();
-        $userData = $stmt->fetch(PDO::FETCH_OBJ);
+        // $sql = "SELECT user_id, name, email, username FROM users WHERE (username=:username or email=:username) and password=:password ";
+        // $stmt = $db->prepare($sql);
+        // $stmt->bindParam("username", $data->username, PDO::PARAM_STR);
+        // $password=hash('sha256',$data->password); //syntext  ตัวเเปลงให้เป็น token 
+        // $stmt->bindParam("password", $password, PDO::PARAM_STR);
+        // $stmt->execute();
+        // $mainCount=$stmt->rowCount();
+        // $userData = $stmt->fetch(PDO::FETCH_OBJ);
         
        //เปลง code ให้เป็น json
-        $db = null;
-         if($userData){
-               $userData = json_encode($userData);
+        // $db = null;
+        //  if($userData){
+        //        $userData = json_encode($userData);
+        //         echo '{"userData": ' .$userData . '}';
+        //     } else {
+        //        echo '{"error":{"text":"Bad request wrong username and password"}}';
+        //     }
+        //$db = null;
+         if($db){
+               $userData = json_encode($db);
                 echo '{"userData": ' .$userData . '}';
             } else {
-               echo '{"error":{"text":"Bad request wrong5555 username and password"}}';
+               echo '{"error":{"text":"Bad request wrong username and password"}}';
             }
+
 
            
     }
@@ -51,6 +63,58 @@ function login() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 }
+
+
+
+
+
+
+function register_by_idcard() {
+    
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    
+    try {
+        
+        //$db = getDB();
+        $db = getDB();
+        // $userData ='';
+        // $sql = "SELECT * FROM mem_h_member WHERE (id_card=:id_card) ";
+        // $stmt = $db->prepare($sql);
+        // $stmt->bindParam("id_card", $data->id_card, PDO::PARAM_STR);
+        // //$password=hash('sha256',$data->password); //syntext  ตัวเเปลงให้เป็น token 
+        // //$stmt->bindParam("password", $password, PDO::PARAM_STR);
+        // $stmt->execute();
+        // $mainCount=$stmt->rowCount();
+        // $userData = $stmt->fetch(PDO::FETCH_OBJ);
+
+        //$objConnect = oci_connect("myuser","mypassword","TCDB");
+        $strSQL = "SELECT * FROM mem_h_member WHERE (id_card=:id_card) and (status_id ='01' or status_id ='04')";
+        $objParse = oci_parse($db, $strSQL);
+        oci_bind_by_name($objParse, ':id_card', $data->id_card);
+        oci_execute ($objParse,OCI_DEFAULT);
+        $objResult = oci_fetch_array($objParse,OCI_BOTH);
+        
+      // เปลง code ให้เป็น json
+       // $db = null;
+       $tmp = "okkkkkkkkkkkkk";
+         if($objResult){
+               $objResult = json_encode($objResult);
+                //echo '{"Hellooooo": ' .$userData . '}';
+                echo '{"Hellooooo": ' .$objResult. '}';
+            } else {
+               echo '{"error":{"text":"Bad request wrong username and password"}}';
+            }
+      
+
+
+           
+    }
+    catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
 
 
 /* ### User registration ### */
